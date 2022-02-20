@@ -7,11 +7,15 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
 )
+
+const refString = "ref: refs/heads/"
+const headPath = ".git/HEAD"
 
 func fileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -21,14 +25,30 @@ func fileExists(filename string) bool {
 	return !info.IsDir()
 }
 
-const refString = "ref: refs/heads/"
-const headPath = ".git/HEAD"
+func hasDotGit(dirPath string) (bool, string) {
+	hPath := path.Join(dirPath, headPath)
+	return fileExists(hPath), hPath
+}
+
+func insideRepo(fPath string) (bool, string) {
+	changed := true
+	oldPath := fPath
+	for changed {
+		if ok, hPath := hasDotGit(fPath); ok {
+			return true, hPath
+		}
+		fPath = path.Dir(fPath)
+		changed = fPath != oldPath
+		oldPath = fPath
+	}
+	return false, ""
+}
 
 func getCurrDir() (string, *string) {
 	dir, _ := os.Getwd()
 	var branchName *string = nil
-	if fileExists(headPath) {
-		bytes, err := ioutil.ReadFile(headPath)
+	if inside, hPath := insideRepo(dir); inside {
+		bytes, err := ioutil.ReadFile(hPath)
 		if err == nil {
 			firstLine := strings.Split(string(bytes), "\n")[0]
 			idx := strings.Index(firstLine, refString)
