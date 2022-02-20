@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/peterh/liner"
 )
 
 const refString = "ref: refs/heads/"
@@ -109,26 +109,38 @@ func getDirStr(dir string) string {
 	return fmt.Sprintf("%s %s", color.YellowString(">"), color.HiCyanString(dir))
 }
 
-func showLine() {
+func getInputLine() string {
 	currDir, branch := getCurrDir()
-	fmt.Print(getDirStr(currDir))
+	line := getDirStr(currDir)
 	if branch != nil {
-		fmt.Print(getBranchStr(*branch))
+		line += getBranchStr(*branch)
 	}
-	fmt.Print(" ")
+	line += " "
+	return line
+}
+
+func getInput(line *liner.State) string {
+	fmt.Print(getInputLine())
+	input, err := line.Prompt("")
+	if err != nil {
+		abort(err.Error())
+	}
+	line.AppendHistory(input)
+	return input
 }
 
 func main() {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Welcome to Mishell 0.1\n\n")
+	line := liner.NewLiner()
+	defer line.Close()
+
+	line.SetCtrlCAborts(true)
+	fmt.Print("Welcome to Mishell 1.0\n\n")
 
 	for {
-		showLine()
-		input, err := reader.ReadString('\n')
-		if err != nil {
-			abort(err.Error())
+		input := getInput(line)
+		if input == "" {
+			continue
 		}
-		input = strings.TrimSuffix(input, "\n")
 		handleInput(input)
 	}
 }
