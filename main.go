@@ -69,7 +69,7 @@ var builtInCommands = map[string]func(string){
 		}
 		err := os.Chdir(args[1])
 		if err != nil {
-			log.Println("Error:", err)
+			fmt.Println("Error:", err)
 			return
 		}
 	},
