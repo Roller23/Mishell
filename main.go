@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/fatih/color"
@@ -13,7 +14,7 @@ import (
 
 func getCurrDir() string {
 	dir, _ := os.Getwd()
-	return dir
+	return filepath.Base(dir)
 }
 
 var builtInCommands = map[string]func(string){
@@ -61,7 +62,7 @@ func main() {
 	fmt.Print("Welcome to Mishell 0.1\n\n")
 
 	for {
-		fmt.Printf("%s %s ", color.CyanString(getCurrDir()), color.YellowString("->"))
+		fmt.Printf("%s %s ", color.YellowString(">"), color.CyanString(getCurrDir()))
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			abort(err.Error())
