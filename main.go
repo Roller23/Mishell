@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -12,9 +13,32 @@ import (
 	"github.com/fatih/color"
 )
 
-func getCurrDir() string {
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+const refString = "ref: refs/heads/"
+const headPath = ".git/HEAD"
+
+func getCurrDir() (string, *string) {
 	dir, _ := os.Getwd()
-	return filepath.Base(dir)
+	var branchName *string = nil
+	if fileExists(headPath) {
+		bytes, err := ioutil.ReadFile(headPath)
+		if err == nil {
+			firstLine := strings.Split(string(bytes), "\n")[0]
+			idx := strings.Index(firstLine, refString)
+			if idx != -1 {
+				branch := firstLine[idx+len(refString):]
+				branchName = &branch
+			}
+		}
+	}
+	return filepath.Base(dir), branchName
 }
 
 var builtInCommands = map[string]func(string){
@@ -62,7 +86,12 @@ func main() {
 	fmt.Print("Welcome to Mishell 0.1\n\n")
 
 	for {
-		fmt.Printf("%s %s ", color.YellowString(">"), color.CyanString(getCurrDir()))
+		currDir, branch := getCurrDir()
+		fmt.Printf("%s %s", color.YellowString(">"), color.HiCyanString(currDir))
+		if branch != nil {
+			fmt.Printf("%s%s%s", color.BlueString(":("), color.HiRedString(*branch), color.BlueString(")"))
+		}
+		fmt.Print(" ")
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			abort(err.Error())
