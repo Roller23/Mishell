@@ -101,17 +101,29 @@ func handleInput(input string) {
 	}
 }
 
+func getBranchStr(name string) string {
+	return fmt.Sprintf("%s%s%s", color.HiBlueString(":("), color.HiRedString(name), color.HiBlueString(")"))
+}
+
+func getDirStr(dir string) string {
+	return fmt.Sprintf("%s %s", color.YellowString(">"), color.HiCyanString(dir))
+}
+
+func showLine() {
+	currDir, branch := getCurrDir()
+	fmt.Print(getDirStr(currDir))
+	if branch != nil {
+		fmt.Print(getBranchStr(*branch))
+	}
+	fmt.Print(" ")
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Welcome to Mishell 0.1\n\n")
 
 	for {
-		currDir, branch := getCurrDir()
-		fmt.Printf("%s %s", color.YellowString(">"), color.HiCyanString(currDir))
-		if branch != nil {
-			fmt.Printf("%s%s%s", color.HiBlueString(":("), color.HiRedString(*branch), color.HiBlueString(")"))
-		}
-		fmt.Print(" ")
+		showLine()
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			abort(err.Error())
