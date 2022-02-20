@@ -109,7 +109,7 @@ func main() {
 		currDir, branch := getCurrDir()
 		fmt.Printf("%s %s", color.YellowString(">"), color.HiCyanString(currDir))
 		if branch != nil {
-			fmt.Printf("%s%s%s", color.BlueString(":("), color.HiRedString(*branch), color.BlueString(")"))
+			fmt.Printf("%s%s%s", color.HiBlueString(":("), color.HiRedString(*branch), color.HiBlueString(")"))
 		}
 		fmt.Print(" ")
 		input, err := reader.ReadString('\n')
